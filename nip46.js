@@ -42,7 +42,7 @@ export function parseBunkerUri(uri) {
  */
 export async function bunkerSigner(uri, { onAuthUrl, timeout = 30_000 } = {}) {
   const { remotePubkey, relays, secret } = parseBunkerUri(uri)
-  const [{ generateSecretKey, getPublicKey, finalizeEvent }, { nip44 }] = await Promise.all([
+  const [{ generateSecretKey, getPublicKey, finalizeEvent }, nip44] = await Promise.all([
     import(`${TOOLS}/pure`),
     import(`${TOOLS}/nip44`),
   ])
