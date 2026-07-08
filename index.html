@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>nip46 — remote signer (bunker) demo</title>
+<link rel="stylesheet" href="https://nostr-client.github.io/theme/theme.css">
+<style>
+  body { max-width: 42rem; margin: 2.5rem auto; padding: 0 1.2rem 4rem; }
+  h1 { font-size: 1.4rem; } h1 a { text-decoration: none; }
+  form { display: flex; gap: .5rem; margin: 1rem 0; }
+  input { font: inherit; flex: 1; min-width: 0; padding: .55em .8em; border-radius: 999px;
+    border: 1px solid var(--nc-line); background: var(--nc-surface); color: inherit;
+    font-family: var(--nc-mono); font-size: .8rem; }
+  #out { white-space: pre-wrap; overflow-wrap: anywhere; }
+</style>
+</head>
+<body>
+<h1><a href="https://github.com/nostr-client/nip46">nostr-client / nip46</a></h1>
+<p class="nc-muted">Remote signing via an nsec bunker (NIP-46) —
+<strong>experimental</strong>. Paste a <code>bunker://…</code> connection
+string from your signer (nsec.app, Amber, nsecBunker…). Your key never
+touches this page; it announces the same signer contract every nostr-client
+component understands:</p>
+
+<form id="form">
+  <input id="uri" placeholder="bunker://<pubkey>?relay=wss://…&secret=…" spellcheck="false">
+  <button class="nc-btn">Connect</button>
+</form>
+<pre id="out">—</pre>
+
+<p class="nc-muted">Once connected, the whole component ecosystem works
+against the remote signer — here's a composer to prove it:</p>
+<nostr-composer placeholder="This will be signed by your bunker…"></nostr-composer>
+
+<script type="module">
+  import { loginWithBunker } from './nip46.js'
+  import { npubEncode } from 'https://nostr-client.github.io/nip19/nip19.js'
+  import 'https://nostr-client.github.io/composer/composer.js'
+
+  const out = document.getElementById('out')
+  document.getElementById('form').onsubmit = async (e) => {
+    e.preventDefault()
+    out.textContent = 'connecting to bunker (approve the request in your signer app)…'
+    try {
+      const signer = await loginWithBunker(document.getElementById('uri').value)
+      const pubkey = await signer.getPublicKey()
+      out.textContent = '✓ connected\nuser pubkey: ' + pubkey + '\nnpub (display): ' + npubEncode(pubkey)
+    } catch (err) {
+      out.textContent = '✗ ' + (err.message || err)
+    }
+  }
+</script>
+</body>
+</html>
